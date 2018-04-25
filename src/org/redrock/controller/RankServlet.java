@@ -1,48 +1,49 @@
 package org.redrock.controller;
 
-import com.google.gson.Gson;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.redrock.dao.RankDao;
-import org.redrock.utils.WechatUtil;
+import org.redrock.bean.User;
+import org.redrock.service.UserService;
+import org.redrock.utils.JsonUtil;
+import org.redrock.utils.StreamUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.*;
 
 @WebServlet(name = "rank", urlPatterns = "/rank")
 public class RankServlet extends HttpServlet {
+    private UserService userService;
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp){
         String openid = (String) req.getSession().getAttribute("sessionId");
-        net.sf.json.JSONObject Info = WechatUtil.referUserInfo(openid);
-        String rank = WechatUtil.getRank(openid);
-        JSONObject my = WechatUtil.referUserInfo(openid);
-        JSONObject myInfo = new JSONObject();
-        myInfo.put("nickname",my.getString("nickname"));
-        myInfo.put("imgurl",my.getString("imgurl"));
-        myInfo.put("rank", new Integer(rank.substring(0,1)));
+        User userRank = userService.getSimpleRank(openid);
+        User user = userService.getUser(openid);
 
-        List<Map<String, Object>> list = RankDao.rankList();
-        System.out.println(list);
-        JSONObject rankList = new JSONObject();
+        com.alibaba.fastjson.JSONObject SimpleUser = new com.alibaba.fastjson.JSONObject();
+        SimpleUser.put("nickname", user.getNickname());
+        SimpleUser.put("imgurl", user.getImgurl());
+        SimpleUser.put("rank", userRank.getRowNo());
 
-        Iterator it = list.iterator();
+        List<User> UserRank = userService.getRankList();
+        String[] filterStrings = new String[]{"count","number","country","city","province",
+                "sex","openid","privilege","share","language","rowNo"};
+        JSONArray jsonArray = JsonUtil.BeanToJson(UserRank, filterStrings);
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+        Iterator it = jsonArray.iterator();
         int i = 0;
         while (it.hasNext()){
-            rankList.put(Integer.toString(i+1), it.next());
+            jsonObject.put(Integer.toString(i+1), it.next());
             i++;
         }
-        rankList.put("my", myInfo);
+        jsonObject.put("my", SimpleUser);
 
-        Gson gson = new Gson();
-        String data = gson.toJson(rankList);
-        System.out.println(data);
+        com.alibaba.fastjson.JSONObject data = new com.alibaba.fastjson.JSONObject();
+        data.put("data",jsonObject);
 
         JSONObject response = new JSONObject();
         response.put("status",200);
@@ -50,18 +51,23 @@ public class RankServlet extends HttpServlet {
         response.put("data",data);
 
         try {
-            BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(
-                            resp.getOutputStream(), "UTF-8"
-                    )
-            );
-            writer.write(String.valueOf(response));
-            writer.flush();
-            writer.close();
-            System.out.println(response);
+            StreamUtil.writeStream(resp.getOutputStream(), String.valueOf(response));
         } catch (IOException e) {
             e.printStackTrace();
         }
+//        try {
+//            BufferedWriter writer = new BufferedWriter(
+//                    new OutputStreamWriter(
+//                            resp.getOutputStream(), "UTF-8"
+//                    )
+//            );
+//            writer.write(String.valueOf(response));
+//            writer.flush();
+//            writer.close();
+//            System.out.println(response);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)throws ServletException

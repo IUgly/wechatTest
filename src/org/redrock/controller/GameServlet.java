@@ -1,38 +1,35 @@
 package org.redrock.controller;
 
 
-import com.google.gson.Gson;
 import net.sf.json.JSONObject;
-import org.redrock.dao.StartDao;
-import org.redrock.utils.WechatUtil;
+import org.redrock.bean.User;
+import org.redrock.service.UserService;
+import org.redrock.utils.StreamUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @WebServlet(name = "game", urlPatterns = "/game")
 public class GameServlet extends HttpServlet{
+    private UserService userService;
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp)
     throws IOException, ServletException {
         String openid = (String) req.getSession().getAttribute("sessionId");
         System.out.println(openid);
 
-        JSONObject InfoJson = WechatUtil.referUserInfo(openid);
+        User user = userService.getUser(openid);
 
         JSONObject data = new JSONObject();
-        data.put("nickname", InfoJson.getString("nickname"));
-        data.put("rank", WechatUtil.getRank(openid));
-        data.put("share", InfoJson.getString("share"));
-        data.put("count", InfoJson.getString("count"));
-        data.put("imgurl",InfoJson.getString("imgurl"));
+        data.put("nickname", user.getNickname());
+        data.put("rank", userService.getSimpleRank(openid));
+        data.put("share", user.getShare());
+        data.put("count", user.getCount());
+        data.put("imgurl", user.getImgurl());
 
         JSONObject response = new JSONObject();
 
@@ -41,7 +38,6 @@ public class GameServlet extends HttpServlet{
         response.put("data",data);
         System.out.println(response);
 
-        resp.getOutputStream().write(resp.toString().getBytes());
-        resp.getOutputStream().flush();
+        StreamUtil.writeStream(resp.getOutputStream(), String.valueOf(response));
     }
 }

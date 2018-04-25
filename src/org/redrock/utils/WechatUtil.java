@@ -1,8 +1,6 @@
 package org.redrock.utils;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.Gson;
-import org.redrock.dao.StartDao;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -48,34 +46,29 @@ public class WechatUtil {
         }
         return null;
     }
-
-    public static Map<String, Object> getInfoMap(JSONObject json){
-        Map<String, Object> map =new HashMap<String, Object>(9);
-        map.put("country",json.get("country"));
-        map.put("province",json.get("province"));
-        map.put("city",json.get("city"));
-        map.put("openid",json.get("openid"));
-        map.put("sex", json.get("sex"));
-        map.put("nickname", json.get("nickname"));
-        map.put("headimgurl", json.get("headimgurl"));
-        map.put("language", json.get("language"));
-        map.put("privilege", json.get("privilege"));
-        return map;
+//    public static Map<String, Object> getInfoMap(JSONObject json){
+//        Map<String, Object> map =new HashMap<String, Object>(9);
+//        map.put("country",json.get("country"));
+//        map.put("province",json.get("province"));
+//        map.put("city",json.get("city"));
+//        map.put("openid",json.get("openid"));
+//        map.put("sex", json.get("sex"));
+//        map.put("nickname", json.get("nickname"));
+//        map.put("headimgurl", json.get("headimgurl"));
+//        map.put("language", json.get("language"));
+//        map.put("privilege", json.get("privilege"));
+//        return map;
+//    }
+    public static Map<String, Object> createUser(JSONObject json){
+        Map<String, Object> fieldMap = new HashMap<String, Object>();
+        fieldMap.put("nickname", json.get("nickname"));
+        fieldMap.put("country", json.get("country"));
+        fieldMap.put("province", json.get("province"));
+        fieldMap.put("city", json.get("city"));
+        fieldMap.put("openid", json.get("openid"));
+        fieldMap.put("imgurl", json.get("headimgurl"));
+        return fieldMap;
     }
-    public static List<Object> getInfoList(JSONObject json){
-        List<Object> list = new ArrayList<Object>();
-//        list.add(json.get("country"));
-//        list.add(json.get("province"));
-//        list.add(json.get("city"));
-        list.add(""+json.getString("openid")+"");
-//        list.add(json.get("sex"));
-        list.add(""+json.getString("nickname")+"");
-        list.add(""+json.getString("headimgurl")+"");
-//        list.add(json.get("language"));
-//        list.add(json.get("privilege"));
-        return list;
-    }
-
 
     public static JSONObject getAcess_TokenAndOpenId(String code){
         String url_token = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=wxf999d6b9d8eca6de&secret=82b64cc7c85b497652994d28bc1257b7&code=" + code + "&grant_type=authorization_code";
@@ -107,32 +100,6 @@ public class WechatUtil {
             return true;
            }
         }
-    }
-
-    public static net.sf.json.JSONObject referUserInfo (String openid){
-        List<Object> param = new ArrayList<>();
-
-        param.add(openid);
-        StartDao sd = new StartDao();
-        List<Map<String, Object>> in = sd.userInfoDao(param);
-
-        Gson gson = new Gson();
-        String json = gson.toJson(in);
-        json = json.substring(1, json.length()-1);
-        net.sf.json.JSONObject InfoJson = net.sf.json.JSONObject.fromObject(json);
-
-        return InfoJson;
-    }
-
-    public static String getRank(String openid){
-        List<Object> param = new ArrayList<>();
-
-        param.add(openid);
-        StartDao sd = new StartDao();
-        Map<String, Object> rank = sd.rankDao(param);
-
-        return String.valueOf(rank.get("rowNo"));
-
     }
 
 }

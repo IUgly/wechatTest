@@ -2,21 +2,15 @@ package org.redrock.controller;
 
 
 import com.alibaba.fastjson.JSONObject;
-import org.apache.http.HttpRequest;
-import org.redrock.dao.InsertUser;
+import org.redrock.service.UserService;
 import org.redrock.utils.WechatUtil;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @WebFilter(filterName = "Filter", urlPatterns = {"/index.jsp"})
@@ -24,7 +18,7 @@ public class WechatFilter implements javax.servlet.Filter{
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
-
+    private UserService userService;
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
 
@@ -42,28 +36,15 @@ public class WechatFilter implements javax.servlet.Filter{
             String url_userinfo = "https://api.weixin.qq.com/sns/userinfo?access_token="+access_token+"&openid="+openid+"&lang=zh_CN";
             JSONObject userInfo = WechatUtil.getInfo(url_userinfo);
 
-            List<Object> userInfoList = new ArrayList<Object>();
-            userInfoList = WechatUtil.getInfoList(userInfo);
-            Boolean result = false;
-            try {
-                result = InsertUser.InsertUser(userInfoList);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            System.out.println(result);
+            Map<String, Object> beanMap = WechatUtil.createUser(userInfo);
+            userService.createUser(beanMap);
         }else {
             String openid = (String) session.getAttribute("sessionId");
             String access_token = (String)session.getAttribute("access_token");
 
             JSONObject json = WechatUtil.getUserInfo(openid, access_token);
-            List<Object> userInfoList = new ArrayList<Object>();
-            userInfoList = WechatUtil.getInfoList(json);
-            Boolean result = false;
-            try {
-                result = InsertUser.InsertUser(userInfoList);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            Map<String, Object> beanMap = WechatUtil.createUser(json);
+            userService.createUser(beanMap);
         }
             System.out.println(session.getAttribute("sessionId"));
             filterChain.doFilter(request, response);
