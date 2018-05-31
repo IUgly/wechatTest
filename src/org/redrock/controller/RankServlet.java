@@ -17,10 +17,10 @@ import java.util.*;
 
 @WebServlet(name = "rank", urlPatterns = "/rank")
 public class RankServlet extends HttpServlet {
-    private UserService userService;
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp){
-        String openid = (String) req.getSession().getAttribute("sessionId");
+        UserService userService = new UserService();
+        String openid = (String) req.getSession().getAttribute("openid");
         User userRank = userService.getSimpleRank(openid);
         User user = userService.getUser(openid);
 
@@ -31,7 +31,7 @@ public class RankServlet extends HttpServlet {
 
         List<User> UserRank = userService.getRankList();
         String[] filterStrings = new String[]{"count","number","country","city","province",
-                "sex","openid","privilege","share","language","rowNo"};
+                "sex","openid","privilege","share","language","rowNo","score"};
         JSONArray jsonArray = JsonUtil.BeanToJson(UserRank, filterStrings);
         com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
         Iterator it = jsonArray.iterator();
@@ -42,13 +42,15 @@ public class RankServlet extends HttpServlet {
         }
         jsonObject.put("my", SimpleUser);
 
-        com.alibaba.fastjson.JSONObject data = new com.alibaba.fastjson.JSONObject();
-        data.put("data",jsonObject);
+//        com.alibaba.fastjson.JSONObject data = new com.alibaba.fastjson.JSONObject();
+//        data.put("data",jsonObject);
 
         JSONObject response = new JSONObject();
         response.put("status",200);
         response.put("msg","success");
-        response.put("data",data);
+        response.put("data",jsonObject);
+
+        System.out.println(response);
 
         try {
             StreamUtil.writeStream(resp.getOutputStream(), String.valueOf(response));

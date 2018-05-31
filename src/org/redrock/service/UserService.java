@@ -1,6 +1,5 @@
 package org.redrock.service;
 
-import org.redrock.bean.Rank;
 import org.redrock.helper.DatabaseHelper;
 
 import org.redrock.bean.User;

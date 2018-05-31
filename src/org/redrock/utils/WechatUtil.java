@@ -75,6 +75,9 @@ public class WechatUtil {
         JSONObject json = WechatUtil.getInfo(url_token);
         return json;
     }
+//    public static JSONObject getOpenID(String code){
+//        return
+//    }
     public static String getSimpleAccess(){
         String url ="https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wxf999d6b9d8eca6de&secret=82b64cc7c85b497652994d28bc1257b7";
         com.alibaba.fastjson.JSONObject json = WechatUtil.getInfo(url);
@@ -88,7 +91,7 @@ public class WechatUtil {
     }
 
     public static boolean verify(HttpSession session){
-        String openid = (String) session.getAttribute("sessionId");
+        String openid = (String) session.getAttribute("openid");
         if (openid ==null){
             return false;
         }else {

@@ -16,13 +16,19 @@ import java.util.Map;
 
 @WebServlet(name = "over", urlPatterns = "/over")
 public class OverServlet extends HttpServlet {
-    private UserService userService;
+    private final UserService userService;
+
+    public OverServlet() {
+        userService = new UserService();
+    }
+
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)throws IOException
     , ServletException{
+//                UserService userService = new UserService();
                 String score = req.getParameter("score");
-                String openid = (String) req.getSession().getAttribute("sessionId");
-                User user = userService.getUser(openid);
+                String openid = (String) req.getSession().getAttribute("openid");
+                User user = this.userService.getUser(openid);
 
                 Map<String, Object> scoreField = new HashMap<>();
                 scoreField.put("score", score);

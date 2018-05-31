@@ -15,11 +15,12 @@ import java.io.IOException;
 
 @WebServlet(name = "game", urlPatterns = "/game")
 public class GameServlet extends HttpServlet{
-    private UserService userService;
+//    private final UserService userService= null;
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp)
     throws IOException, ServletException {
-        String openid = (String) req.getSession().getAttribute("sessionId");
+        UserService userService = new UserService();
+        String openid = (String) req.getSession().getAttribute("openid");
         System.out.println(openid);
 
         User user = userService.getUser(openid);
